@@ -1,28 +1,76 @@
-REMIX DEFAULT WORKSPACE
+# Blogging App Contract
 
-Remix default workspace is present when:
-i. Remix loads for the very first time 
-ii. A new workspace is created with 'Default' template
-iii. There are no files existing in the File Explorer
+This Solidity program is a simple illustration of the blogging app in which user can register itself. They can also read and write blogs. Admin can delete the blogs as per his/her wish.
 
-This workspace contains 3 directories:
+## Description
 
-1. 'contracts': Holds three contracts with increasing levels of complexity.
-2. 'scripts': Contains four typescript files to deploy a contract. It is explained below.
-3. 'tests': Contains one Solidity test file for 'Ballot' contract & one JS test file for 'Storage' contract.
+This program is a simple contract written in Solidity for a blogging application on the Ethereum blockchain. It defines structures for users and blogs, allowing users to register, write blogs, and view specific blogs. The contract includes admin functionalities to delete blogs also this contract ensures only registered users can write blogs.
 
-SCRIPTS
+## Getting Started
 
-The 'scripts' folder has four typescript files which help to deploy the 'Storage' contract using 'web3.js' and 'ethers.js' libraries.
+### Executing Program
 
-For the deployment of any other contract, just update the contract's name from 'Storage' to the desired contract and provide constructor arguments accordingly 
-in the file `deploy_with_ethers.ts` or  `deploy_with_web3.ts`
+To run this program, you can use Remix, an online Solidity IDE. To get started, go to the Remix website at [Remix Ethereum](https://remix.ethereum.org/).
 
-In the 'tests' folder there is a script containing Mocha-Chai unit tests for 'Storage' contract.
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
 
-To run a script, right click on file name in the file explorer and click 'Run'. Remember, Solidity file must already be compiled.
-Output from script will appear in remix terminal.
+contract BloggingApp {
 
-Please note, require/import is supported in a limited manner for Remix supported modules.
-For now, modules supported by Remix are ethers, web3, swarmgw, chai, multihashes, remix and hardhat only for hardhat.ethers object/plugin.
-For unsupported modules, an error like this will be thrown: '<module_name> module require is not supported by Remix IDE' will be shown.
+    struct Blog{
+        string title;
+        string body;
+        bool exists;
+    }
+    struct User{
+        string username;
+        bool registered;  
+    }
+    
+    // User Functionality
+
+   mapping(address=>User) users;
+
+   function registerUser(string memory username, address _addr) public returns(string memory){
+        if(users[_addr].registered) revert("Already registered");
+
+        users[_addr] = User(username, true);
+        return string(abi.encodePacked(username, " successfully registered"));
+   }
+
+   // Blogging Functionality
+
+   mapping(address=>Blog) blogs;
+
+   function writeBlog(string memory title, string memory body, address _user) public{
+        assert(users[_user].registered);
+        blogs[_user] = (Blog(title, body, true));
+   }
+
+   function viewBlog(address _user) public view returns(Blog memory){
+    if(!blogs[_user].exists) revert("Blog doesn't exists");
+    return blogs[_user];
+   }
+
+   // Admin Functionality
+
+    address admin;
+
+    constructor(){
+        admin=msg.sender;
+    }
+
+    function deleteBlogs(address _user, address _adminAddr) public {
+        require(admin==_adminAddr, "Unauthorized");
+        blogs[_user].exists=false;
+    }
+ 
+}
+```
+To compile the code, click on the "Solidity Compiler" tab in the left-hand sidebar. Make sure the "Compiler" option is set to "0.8.18" (or another compatible version), and then click on the "Compile Token.sol" button.
+
+Once the code is compiled, you can deploy the contract by clicking on the "Deploy & Run Transactions" tab in the left-hand sidebar. Select the "Token" contract from the dropdown menu, and then click on the "Deploy" button.
+
+## License
+This project is licensed under the MIT License - see the LICENSE.md file for details
