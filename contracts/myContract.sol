@@ -52,7 +52,3 @@ contract BloggingApp {
     }
  
 }
-
-// test-addresses
-// 0x9BD5EE362566B0eB960fD9Ad7975119B09CD9264
-// 0x076234D21e404B8832ff2aD8cfa179598357724A
