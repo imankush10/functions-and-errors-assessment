@@ -1,28 +1,58 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-contract MyContract {
-    mapping (address => uint) balances;
-    uint constant MAX_ONE_TIME_AMOUNT = 1000;
-    uint32 pin = 1234;
+contract BloggingApp {
 
-   
-    function depositMoney(uint _amount) external {
-        assert(_amount<=MAX_ONE_TIME_AMOUNT);
-        balances[msg.sender]+=_amount;
+    struct Blog{
+        string title;
+        string body;
+        bool exists;
+    }
+    struct User{
+        string username;
+        bool registered;  
+    }
+    
+    // User Functionality
+
+   mapping(address=>User) users;
+
+   function registerUser(string memory username, address _addr) public returns(string memory){
+        if(users[_addr].registered) revert("Already registered");
+
+        users[_addr] = User(username, true);
+        return string(abi.encodePacked(username, " successfully registered"));
+   }
+
+   // Blogging Functionality
+
+   mapping(address=>Blog) blogs;
+
+   function writeBlog(string memory title, string memory body, address _user) public{
+        assert(users[_user].registered);
+        blogs[_user] = (Blog(title, body, true));
+   }
+
+   function viewBlog(address _user) public view returns(Blog memory){
+    if(!blogs[_user].exists) revert("Blog doesn't exists");
+    return blogs[_user];
+   }
+
+   // Admin Functionality
+
+    address admin;
+
+    constructor(){
+        admin=msg.sender;
     }
 
-    function withdrawMoney(uint _amount, uint32 _pin) external {
-        assert(_amount<=MAX_ONE_TIME_AMOUNT);
-
-        if(_pin!=pin) revert("Unauthorized withdrawal");
-
-        require(balances[msg.sender]>=_amount, "Insufficient balance");
-        balances[msg.sender]-=_amount;
-    }
-    function displayBalance(uint32 _pin) external view returns(uint) {
-        if(_pin!=pin) revert("Unauthorized access");
-        return balances[msg.sender];
+    function deleteBlogs(address _user, address _adminAddr) public {
+        require(admin==_adminAddr, "Unauthorized");
+        blogs[_user].exists=false;
     }
  
 }
+
+// test-addresses
+// 0x9BD5EE362566B0eB960fD9Ad7975119B09CD9264
+// 0x076234D21e404B8832ff2aD8cfa179598357724A
